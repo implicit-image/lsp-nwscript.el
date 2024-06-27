@@ -31,7 +31,7 @@
   :link '(url-link "https://github.com/jd28/nwscript-lsp")
   :package-version '(lsp-mode . "8.0.1"))
 
-(defcustom lsp-nwscript-node-server-path nil
+(defcustom lsp-nwscript-node-server-path "test"
   "Path to server.js."
   :type 'string
   :group 'lsp-nwscript-node)
@@ -143,15 +143,15 @@
 
 (defun lsp-nwscript-node--server-command ()
   "Generate LSP startup command for nwscript-ee-language-server."
-   '("node" lsp-nwscript-node-server-path lsp-nwscript-node-server-args))
+   (append '("node" lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
 
 
 ;; register extra server options
 (lsp-register-custom-settings lsp-nwscript-node-extra-server-options)
 
 (lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection (lsp-nwscript-node--server-command))
-                  :actiovation-fn (lsp-activate-on "nwscript")
+ (make-lsp-client :new-connection (lsp-stdio-connection #'lsp-nwscript-node--server-command)
+                  :activation-fn (lsp-activate-on "nwscript")
                   :priority -1
                   :server-id 'nwscript-ls))
 
