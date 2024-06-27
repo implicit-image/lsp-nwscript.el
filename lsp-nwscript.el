@@ -143,7 +143,7 @@
 
 (defun lsp-nwscript-node--server-command ()
   "Generate LSP startup command for nwscript-ee-language-server."
-   (append '("node" lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
+   (append '("node" ,lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
 
 
 ;; register extra server options
