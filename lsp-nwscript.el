@@ -134,7 +134,7 @@
   :package-version '(lsp-mode . "8.0.1")
   :lsp-path "nwscript-ee-lsp.compiler.nwnInstallation")
 
-(defcustom lsp-nwscript-node-extra-server-options ()
+(defcustom lsp-nwscript-node-extra-server-settings ()
   "Use this to pass extra server configuration options. Same syntax as \
 `lsp-register-custom-settings'."
   :type '(alist :value-type (group integer boolean))
@@ -144,17 +144,17 @@
 
 (defun lsp-nwscript-node--server-command ()
   "Generate LSP startup command for nwscript-ee-language-server."
-   (append '("node" ,lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
+  (append (list "node" lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
 
 (defun lsp-nwscript-node--find-executable ()
   "Find executables needed for nwscript-ee-language-server."
   (and (executable-find "node")
        (or (file-exists-p lsp-nwscript-node-server-path)
-           (file-symlink-p lsp-nwscript-node-server-path)))
+           (file-symlink-p lsp-nwscript-node-server-path))))
 
 
 ;; register extra server options
-(lsp-register-custom-settings lsp-nwscript-node-extra-server-options)
+(lsp-register-custom-settings lsp-nwscript-node-extra-server-settings)
 
 (lsp-register-client
  (make-lsp-client :new-connection (lsp-stdio-connection #'lsp-nwscript-node--server-command #'lsp-nwscript-node--find-executable)
