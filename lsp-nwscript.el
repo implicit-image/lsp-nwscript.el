@@ -15,7 +15,8 @@
 (defcustom lsp-nwscript-server-type "node"
   "What server to use."
   :type '(choice
-          (const "node" :doc "Use nwscript-ee-language-server"))
+          (const "node" :doc "Use https://github.com/PhilippeChab/nwscript-ee-language-server")
+          (const "py" :doc "CLIENT NOT READY YET!!!\nUse https://github.com/jd28/nwscript-lsp"))
   :group 'lsp-nwscript
   :package-version '(lsp-mode . "8.0.1"))
 
@@ -31,7 +32,7 @@
   :link '(url-link "https://github.com/jd28/nwscript-lsp")
   :package-version '(lsp-mode . "8.0.1"))
 
-(defcustom lsp-nwscript-node-server-path "test"
+(defcustom lsp-nwscript-node-server-path nil
   "Path to server.js."
   :type 'string
   :group 'lsp-nwscript-node)
@@ -145,12 +146,18 @@
   "Generate LSP startup command for nwscript-ee-language-server."
    (append '("node" ,lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
 
+(defun lsp-nwscript-node--find-executable ()
+  "Find executables needed for nwscript-ee-language-server."
+  (and (executable-find "node")
+       (or (file-exists-p lsp-nwscript-node-server-path)
+           (file-symlink-p lsp-nwscript-node-server-path)))
+
 
 ;; register extra server options
 (lsp-register-custom-settings lsp-nwscript-node-extra-server-options)
 
 (lsp-register-client
- (make-lsp-client :new-connection (lsp-stdio-connection #'lsp-nwscript-node--server-command)
+ (make-lsp-client :new-connection (lsp-stdio-connection #'lsp-nwscript-node--server-command #'lsp-nwscript-node--find-executable)
                   :activation-fn (lsp-activate-on "nwscript")
                   :priority -1
                   :server-id 'nwscript-ls))
