@@ -136,7 +136,7 @@
 (defcustom lsp-nwscript-node-extra-server-options ()
   "Use this to pass extra server configuration options. Same syntax as \
 `lsp-register-custom-settings'."
-  :type '(alist :value-type (group integer boolean)
+  :type '(alist :value-type (group integer boolean))
   :group 'lsp-nwscript-node
   :package-version '(lsp-mode . "8.0.1"))
 
