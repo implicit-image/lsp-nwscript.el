@@ -12,7 +12,7 @@
   :link '(url-link "https://github.com/implicit-image/lsp-nwscript.el")
   :package-version '(lsp-mode . "8.0.1"))
 
-(defcustom lsp-nwscript-server-type '(const "node")
+(defcustom lsp-nwscript-server-type "node"
   "What server to use."
   :type '(choice
           (const "node" :doc "Use nwscript-ee-language-server"))
