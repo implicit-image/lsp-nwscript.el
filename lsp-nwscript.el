@@ -134,17 +134,29 @@
   :package-version '(lsp-mode . "8.0.1")
   :lsp-path "nwscript-ee-lsp.compiler.nwnInstallation")
 
-(defcustom lsp-nwscript-node-extra-server-settings ()
+(defcustom lsp-nwscript-node-extra-server-settings nil
   "Use this to pass extra server configuration options. Same syntax as \
 `lsp-register-custom-settings'."
-  :type '(alist :value-type (group integer boolean))
+  :type 'alist
+  :group 'lsp-nwscript-node
+  :package-version '(lsp-mode . "8.0.1"))
+
+(defcustom lsp-nwscript-node-local-includes-alist nil
+  "FOR USE ONLY WITH lsp-ee-language-server FORK!!!\n
+You can find it here: https:\\\\github.com/implicit-image/nwscript-ee-language-server\n
+An alist of project paths and lists of corresponding include directories. If an include path
+starts with \".\" it will be appended to project path.\n
+`(setq lsp-nwscript-node-local-includes-alist
+                        '((\"path/to/project\"
+                                '(\"/absolute/path/to/include/dir1\" \"./relative/path/to/include/dir2\"))))'"
+  :type '(alist)
   :group 'lsp-nwscript-node
   :package-version '(lsp-mode . "8.0.1"))
 
 
 (defun lsp-nwscript-node--server-command ()
   "Generate LSP startup command for nwscript-ee-language-server."
-  (append (list "node" lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
+  (append `("node" ,lsp-nwscript-node-server-path) lsp-nwscript-node-server-args))
 
 (defun lsp-nwscript-node--find-executable ()
   "Find executables needed for nwscript-ee-language-server."
@@ -152,13 +164,30 @@
        (or (file-exists-p lsp-nwscript-node-server-path)
            (file-symlink-p lsp-nwscript-node-server-path))))
 
+(defun lsp-nwscript--get-includes-for-workspace (root-dir)
+  "Chooses which folder are local includes in based on workspace root ROOT-DIR."
+  (cond ((length< root-dir 1) '())
+        (t (let ((matching (cl-remove-if
+                            (lambda (el) (not (string-equal-ignore-case (car el) root-dir)))
+                            lsp-nwscript-node-local-includes-alist)))
+             (cond ((length< matching 1) '())
+                   (t (car (cdr (car matching)))))))))
 
-;; register extra server options
-(lsp-register-custom-settings lsp-nwscript-node-extra-server-settings)
+
+(defun lsp-nwscript-node--init-fn (workspace)
+  "Initializatio function."
+  (let* ((root-dir (lsp--workspace-root workspace))
+         (includes (lsp-nwscript--get-includes-for-workspace root-dir))
+         (absolute-includes (mapcar (lambda (inc) (f-join root-dir inc)) (eval includes)))
+         (settings (append
+                    lsp-nwscript-node-extra-server-settings
+                    `(("nwscript-ee-lsp.compiler.workspaceIncludes" ,absolute-includes t)))))
+    (lsp-register-custom-settings settings)))
 
 (lsp-register-client
  (make-lsp-client :new-connection (lsp-stdio-connection #'lsp-nwscript-node--server-command #'lsp-nwscript-node--find-executable)
                   :activation-fn (lsp-activate-on "nwscript")
+                  :initialized-fn #'lsp-nwscript-node--init-fn
                   :priority -1
                   :server-id 'nwscript-ls))
 
